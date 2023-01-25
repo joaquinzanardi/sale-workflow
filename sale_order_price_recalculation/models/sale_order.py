@@ -4,7 +4,7 @@
 # Copyright 2016 Vicent Cubells <vicent.cubells@tecnativa.com>
 # Copyright 2017 David Vidal <david.vidal@tecnativa.com>
 # License AGPL-3 - See http://www.gnu.org/licenses/agpl-3.0.html
-from odoo import api, models
+from odoo import api, models, exceptions
 
 
 class SaleOrder(models.Model):
@@ -12,6 +12,9 @@ class SaleOrder(models.Model):
 
     @api.multi
     def recalculate_prices(self):
+        if self.invoice_count > 0:
+            raise exceptions.UserError("Prices can't be updated. The sale order has already an asociated invoice.")
+
         for line in self.mapped('order_line'):
             dict = line._convert_to_write(line.read()[0])
             if 'product_tmpl_id' in line._fields:
